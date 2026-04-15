@@ -234,26 +234,7 @@ The plugin will automatically use your authenticated account for this repository
             errorBody.ifEmpty { "HTTP Error $statusCode" }
         }
 
-        return when (statusCode) {
-            HttpURLConnection.HTTP_UNAUTHORIZED -> 
-                AzureDevOpsApiException("Authentication failed (401). Please login:\n" +
-                    "1. Go to File → Settings → Tools → Azure DevOps Accounts\n" +
-                    "2. Click 'Add' to login with your Microsoft account\n" +
-                    "3. Complete the authentication in your browser")
-            HttpURLConnection.HTTP_FORBIDDEN ->
-                AzureDevOpsApiException("Insufficient permissions (403). Your account doesn't have access to this resource.\n" +
-                    "Please check that you have the required permissions in Azure DevOps.")
-            HttpURLConnection.HTTP_NOT_FOUND ->
-                AzureDevOpsApiException("Resource not found (404).\n" +
-                    "Please verify that the Organization, Project, and Repository names are correct\n" +
-                    "and that you have access to them in Azure DevOps.")
-            HttpURLConnection.HTTP_CONFLICT ->
-                AzureDevOpsApiException("Conflict: $errorMessage (409)")
-            HttpURLConnection.HTTP_BAD_REQUEST ->
-                AzureDevOpsApiException("Invalid request: $errorMessage (400)")
-            else ->
-                AzureDevOpsApiException("HTTP Error $statusCode: $errorMessage")
-        }
+        return AzureDevOpsErrorHandler.getInstance(project).handleHttpError(statusCode, errorMessage)
     }
 
     // endregion
