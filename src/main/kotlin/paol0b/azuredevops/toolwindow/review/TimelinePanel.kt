@@ -186,8 +186,10 @@ class TimelinePanel(
                 urls += (freshPr.reviewers ?: emptyList()).map { it.imageUrl }
                 avatarService.preloadAvatars(urls)
 
+                // Capture the PR snapshot to render with, avoiding stale reads
+                val snapshotPr = freshPr
                 ApplicationManager.getApplication().invokeLater {
-                    renderTimeline(entries, voteSummaries)
+                    renderTimeline(entries, voteSummaries, snapshotPr)
                 }
             } catch (e: Exception) {
                 logger.error("Failed to load timeline", e)
@@ -208,7 +210,7 @@ class TimelinePanel(
     //  Rendering
     // ==================================================================
 
-    private fun renderTimeline(entries: List<TimelineEntry>, voteSummaries: List<ReviewerVoteSummary>) {
+    private fun renderTimeline(entries: List<TimelineEntry>, voteSummaries: List<ReviewerVoteSummary>, prSnapshot: PullRequest) {
         // Remember scroll position
         val scrollBar = scrollPane.verticalScrollBar
         val wasAtBottom = scrollBar.value + scrollBar.visibleAmount >= scrollBar.maximum - 20
@@ -232,7 +234,7 @@ class TimelinePanel(
                         timelineContainer.add(CommentCardComponent(
                             project = project,
                             entry = entry,
-                            pullRequest = latestPullRequest,
+                            pullRequest = prSnapshot,
                             onReply = { threadId, content -> handleReply(threadId, content) },
                             onStatusChange = { threadId, status -> handleStatusChange(threadId, status) }
                         ))

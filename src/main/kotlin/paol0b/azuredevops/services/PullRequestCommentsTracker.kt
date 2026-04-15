@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import paol0b.azuredevops.model.CommentThread
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Service to track which files have PR comments
@@ -12,8 +13,8 @@ import paol0b.azuredevops.model.CommentThread
 @Service(Service.Level.PROJECT)
 class PullRequestCommentsTracker(private val project: Project) {
 
-    // Map: file -> list of comment threads
-    private val fileComments = mutableMapOf<VirtualFile, List<CommentThread>>()
+    // Map: file -> list of comment threads (thread-safe for concurrent access from EDT and background threads)
+    private val fileComments = ConcurrentHashMap<VirtualFile, List<CommentThread>>()
 
     companion object {
         fun getInstance(project: Project): PullRequestCommentsTracker {

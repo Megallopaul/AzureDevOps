@@ -17,6 +17,7 @@ import paol0b.azuredevops.services.AzureDevOpsConfigService
 import paol0b.azuredevops.services.CommentsPollingService
 import paol0b.azuredevops.services.GitRepositoryService
 import paol0b.azuredevops.services.PullRequestCommentsService
+import java.util.concurrent.ConcurrentHashMap.newKeySet
 
 /**
  * Listener to detect when a file is opened
@@ -26,7 +27,10 @@ import paol0b.azuredevops.services.PullRequestCommentsService
 class FileOpenedListener(private val project: Project) : FileEditorManagerListener {
 
     private val logger = Logger.getInstance(FileOpenedListener::class.java)
-    private val notifiedBranches = mutableSetOf<String>()
+    // Thread-safe set to track which branches have been notified
+    private val notifiedBranches = newKeySet<String>()
+    // Volatile reference for safe cross-thread visibility of the current PR
+    @Volatile
     private var currentPullRequest: PullRequest? = null
 
     override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
@@ -50,7 +54,7 @@ class FileOpenedListener(private val project: Project) : FileEditorManagerListen
         
         // If we already have a current PR for this branch, load comments directly
         val pr = currentPullRequest
-        if (pr != null && pr.sourceRefName?.endsWith(currentBranch.displayName) == true) {
+        if (pr != null && pr.sourceRefName.endsWith(currentBranch.displayName)) {
             logger.info("Using cached PR #${pr.pullRequestId}")
             loadCommentsForFile(source, file, pr)
             return
