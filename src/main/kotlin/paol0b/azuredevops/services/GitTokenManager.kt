@@ -10,6 +10,7 @@ import java.io.File
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
@@ -39,7 +40,7 @@ class GitTokenManager : PersistentStateComponent<GitTokenManager.State> {
 
     /** Persisted state: repoAbsolutePath → accountId */
     data class State(
-        var managedRepos: MutableMap<String, String> = mutableMapOf()
+        var managedRepos: MutableMap<String, String> = ConcurrentHashMap()
     )
 
     private var myState = State()
@@ -65,7 +66,7 @@ class GitTokenManager : PersistentStateComponent<GitTokenManager.State> {
 
     /** Removes all repo registrations for the given account (e.g. when the account is deleted). */
     fun unregisterAllForAccount(accountId: String) {
-        val removed = myState.managedRepos.entries.filter { it.value == accountId }.map { it.key }
+        val removed = myState.managedRepos.filter { it.value == accountId }.map { it.key }
         removed.forEach { myState.managedRepos.remove(it) }
         if (removed.isNotEmpty()) {
             logger.info("GitTokenManager: unregistered ${removed.size} repo(s) for account '$accountId'")

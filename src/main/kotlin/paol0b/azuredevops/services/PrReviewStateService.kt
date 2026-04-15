@@ -8,6 +8,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 import paol0b.azuredevops.model.PullRequest
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -34,14 +36,14 @@ class PrReviewStateService(private val project: Project) : PersistentStateCompon
     }
 
     data class State(
-        // Map of PR ID to list of reviewed file paths
-        var reviewedFiles: MutableMap<Int, MutableSet<String>> = mutableMapOf(),
-        
+        // Map of PR ID to set of reviewed file paths
+        var reviewedFiles: MutableMap<Int, MutableSet<String>> = ConcurrentHashMap(),
+
         // Current selected PR for review
         var currentPullRequestId: Int? = null,
-        
+
         // Map of PR ID to vote status (for caching)
-        var prVotes: MutableMap<Int, Int> = mutableMapOf()
+        var prVotes: MutableMap<Int, Int> = ConcurrentHashMap()
     )
 
     override fun getState(): State = myState
@@ -54,7 +56,7 @@ class PrReviewStateService(private val project: Project) : PersistentStateCompon
      * Mark a file as reviewed in a PR
      */
     fun markFileAsReviewed(pullRequestId: Int, filePath: String) {
-        val reviewedSet = myState.reviewedFiles.getOrPut(pullRequestId) { mutableSetOf() }
+        val reviewedSet = myState.reviewedFiles.computeIfAbsent(pullRequestId) { CopyOnWriteArraySet() }
         reviewedSet.add(filePath)
         notifyStateChanged()
         logger.info("Marked file as reviewed: PR #$pullRequestId - $filePath")
