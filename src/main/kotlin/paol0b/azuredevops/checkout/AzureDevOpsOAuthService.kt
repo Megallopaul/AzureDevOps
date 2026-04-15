@@ -83,17 +83,17 @@ class AzureDevOpsOAuthService {
      */
     fun authenticateWithDeviceCode(organizationUrl: String, deviceCodeResponse: DeviceCodeResponse): CompletableFuture<OAuthResult?> {
         val future = CompletableFuture<OAuthResult?>()
-        
+
+        val executor = Executors.newSingleThreadExecutor()
         try {
             logger.info("Starting device code authentication")
             logger.info("User code: ${deviceCodeResponse.userCode}")
             logger.info("Verification URI: ${deviceCodeResponse.verificationUri}")
-            
+
             // Browser should already be opened by DeviceCodeAuthDialog
             // BrowserUtil.browse(deviceCodeResponse.verificationUri)
-            
+
             // Poll for token in background
-            val executor = Executors.newSingleThreadExecutor()
             executor.submit {
                 try {
                     val result = pollForToken(deviceCodeResponse, organizationUrl)
@@ -105,12 +105,12 @@ class AzureDevOpsOAuthService {
                     executor.shutdown()
                 }
             }
-            
         } catch (e: Exception) {
+            executor.shutdown()
             logger.error("Failed to start device code authentication", e)
             future.complete(null)
         }
-        
+
         return future
     }
 
