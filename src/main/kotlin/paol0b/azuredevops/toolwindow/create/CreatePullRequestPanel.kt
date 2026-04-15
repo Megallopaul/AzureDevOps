@@ -26,6 +26,9 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import git4idea.GitCommit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import paol0b.azuredevops.model.GitBranch
 import paol0b.azuredevops.model.Identity
 import paol0b.azuredevops.services.AzureDevOpsApiClient
@@ -462,24 +465,23 @@ class CreatePullRequestPanel(
         commitCountLabel.text = "Loading changes..."
         commitCountLabel.icon = AllIcons.Process.Step_1
 
-        with(paol0b.azuredevops.services.AzureDevOpsCoroutineScope.getInstance(project)) {
-            kotlinx.coroutines.launch(kotlinx.coroutines.Dispatchers.IO) {
-                try {
-                    val changes = gitService.getChangesBetweenBranches(source.name, target.name)
-                    val commits = gitService.getCommitsBetweenBranches(source.name, target.name)
+        val scope = paol0b.azuredevops.services.AzureDevOpsCoroutineScope.getInstance(project)
+        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val changes = gitService.getChangesBetweenBranches(source.name, target.name)
+                val commits = gitService.getCommitsBetweenBranches(source.name, target.name)
 
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        currentChanges = changes
-                        currentCommits = commits
-                        commitCountLabel.icon = null
-                        commitCountLabel.text = "Changes from ${commits.size} commit${if (commits.size != 1) "s" else ""}"
-                        populateChangesTree(changes)
-                    }
-                } catch (e: Exception) {
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        commitCountLabel.icon = AllIcons.General.Error
-                        commitCountLabel.text = "Error loading changes: ${e.message}"
-                    }
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    currentChanges = changes
+                    currentCommits = commits
+                    commitCountLabel.icon = null
+                    commitCountLabel.text = "Changes from ${commits.size} commit${if (commits.size != 1) "s" else ""}"
+                    populateChangesTree(changes)
+                }
+            } catch (e: Exception) {
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    commitCountLabel.icon = AllIcons.General.Error
+                    commitCountLabel.text = "Error loading changes: ${e.message}"
                 }
             }
         }

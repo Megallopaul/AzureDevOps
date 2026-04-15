@@ -112,7 +112,7 @@ class CreatePullRequestDialog private constructor(
                         indicator.fraction = 0.6
                         val changes = if (currentBranch != null && defaultTarget != null) {
                             try {
-                                kotlinx.coroutines.runBlocking { gitService.getChangesBetweenBranches(currentBranch.name, defaultTarget.name) }
+                                gitService.getChangesBetweenBranchesBlocking(currentBranch.name, defaultTarget.name)
                             } catch (e: Exception) {
                                 Logger.getInstance(CreatePullRequestDialog::class.java)
                                     .warn("Failed to load initial changes", e)
@@ -121,12 +121,12 @@ class CreatePullRequestDialog private constructor(
                         } else {
                             emptyList()
                         }
-                        
+
                         indicator.text = "Loading commits..."
                         indicator.fraction = 0.8
                         val commits = if (currentBranch != null && defaultTarget != null) {
                             try {
-                                kotlinx.coroutines.runBlocking { gitService.getCommitsBetweenBranches(currentBranch.name, defaultTarget.name) }
+                                gitService.getCommitsBetweenBranchesBlocking(currentBranch.name, defaultTarget.name)
                             } catch (e: Exception) {
                                 Logger.getInstance(CreatePullRequestDialog::class.java)
                                     .warn("Failed to load initial commits", e)
@@ -309,14 +309,14 @@ class CreatePullRequestDialog private constructor(
             return
         }
 
-        // Run Git operations in background thread
+        // Run blocking Git operations on background thread
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 // Load changes
-                val changes = gitService.getChangesBetweenBranches(sourceBranch.name, targetBranch.name)
-                
+                val changes = gitService.getChangesBetweenBranchesBlocking(sourceBranch.name, targetBranch.name)
+
                 // Load commits
-                val commits = gitService.getCommitsBetweenBranches(sourceBranch.name, targetBranch.name)
+                val commits = gitService.getCommitsBetweenBranchesBlocking(sourceBranch.name, targetBranch.name)
 
                 // Update UI on EDT
                 ApplicationManager.getApplication().invokeLater {

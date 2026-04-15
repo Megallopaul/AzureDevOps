@@ -137,6 +137,9 @@
         
         <!-- Avatar caching service -->
         <projectService serviceImplementation="paol0b.azuredevops.services.AvatarService"/>
+
+        <!-- CoroutineScope for Azure DevOps operations -->
+        <projectService serviceImplementation="paol0b.azuredevops.services.AzureDevOpsCoroutineScope"/>
         
         <!-- Application-level configuration for accounts -->
         <applicationConfigurable 

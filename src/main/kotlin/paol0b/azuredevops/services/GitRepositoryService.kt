@@ -237,36 +237,50 @@ class GitRepositoryService(private val project: Project) {
     }
 
     /**
-     * Gets the changes between two branches
+     * Gets the changes between two branches (blocking, for use from background threads)
      */
-    suspend fun getChangesBetweenBranches(sourceBranch: String, targetBranch: String): List<Change> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-        val repository = getCurrentRepository() ?: return@withContext emptyList()
+    fun getChangesBetweenBranchesBlocking(sourceBranch: String, targetBranch: String): List<Change> {
+        val repository = getCurrentRepository() ?: return emptyList()
 
-        try {
+        return try {
             val sourceRef = resolveGitRef(sourceBranch)
             val targetRef = resolveGitRef(targetBranch)
 
-            return@withContext GitChangeUtils.getDiff(project, repository.root, targetRef, sourceRef, null).toList()
+            GitChangeUtils.getDiff(project, repository.root, targetRef, sourceRef, null).toList()
         } catch (e: Exception) {
             logger.error("Error getting changes between branches", e)
-            return@withContext emptyList()
+            emptyList()
         }
     }
 
     /**
-     * Gets the commits between two branches
+     * Gets the changes between two branches (suspend function for coroutine contexts)
      */
-    suspend fun getCommitsBetweenBranches(sourceBranch: String, targetBranch: String): List<git4idea.GitCommit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-        val repository = getCurrentRepository() ?: return@withContext emptyList()
+    suspend fun getChangesBetweenBranches(sourceBranch: String, targetBranch: String): List<Change> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        getChangesBetweenBranchesBlocking(sourceBranch, targetBranch)
+    }
 
-        try {
+    /**
+     * Gets the commits between two branches (blocking, for use from background threads)
+     */
+    fun getCommitsBetweenBranchesBlocking(sourceBranch: String, targetBranch: String): List<git4idea.GitCommit> {
+        val repository = getCurrentRepository() ?: return emptyList()
+
+        return try {
             val sourceRef = resolveGitRef(sourceBranch)
             val targetRef = resolveGitRef(targetBranch)
 
-            return@withContext GitHistoryUtils.history(project, repository.root, "$targetRef..$sourceRef")
+            GitHistoryUtils.history(project, repository.root, "$targetRef..$sourceRef")
         } catch (e: Exception) {
             logger.error("Error getting commits between branches", e)
-            return@withContext emptyList()
+            emptyList()
         }
+    }
+
+    /**
+     * Gets the commits between two branches (suspend function for coroutine contexts)
+     */
+    suspend fun getCommitsBetweenBranches(sourceBranch: String, targetBranch: String): List<git4idea.GitCommit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        getCommitsBetweenBranchesBlocking(sourceBranch, targetBranch)
     }
 }
