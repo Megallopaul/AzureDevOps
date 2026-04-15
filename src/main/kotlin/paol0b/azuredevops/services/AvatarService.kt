@@ -186,11 +186,11 @@ class AvatarService(private val project: Project) {
     // ── Image loading ───────────────────────────────────────────────────
 
     private fun loadImage(url: String, size: Int): BufferedImage? {
-        return try {
-            val configService = AzureDevOpsConfigService.getInstance(project)
-            val token = configService.getConfig().personalAccessToken
+        val configService = AzureDevOpsConfigService.getInstance(project)
+        val token = configService.getConfig().personalAccessToken
+        val connection = URI(url).toURL().openConnection()
 
-            val connection = URI(url).toURL().openConnection()
+        return try {
             if (token.isNotBlank()) {
                 val credentials = ":$token"
                 val encoded = java.util.Base64.getEncoder().encodeToString(credentials.toByteArray())
@@ -215,6 +215,10 @@ class AvatarService(private val project: Project) {
         } catch (e: Throwable) {
             logger.debug("Error loading image from $url: ${e.message}")
             null
+        } finally {
+            if (connection is java.net.HttpURLConnection) {
+                connection.disconnect()
+            }
         }
     }
 
