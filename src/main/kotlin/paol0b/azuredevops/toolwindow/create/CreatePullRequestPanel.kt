@@ -462,22 +462,24 @@ class CreatePullRequestPanel(
         commitCountLabel.text = "Loading changes..."
         commitCountLabel.icon = AllIcons.Process.Step_1
 
-        ApplicationManager.getApplication().executeOnPooledThread {
-            try {
-                val changes = gitService.getChangesBetweenBranches(source.name, target.name)
-                val commits = gitService.getCommitsBetweenBranches(source.name, target.name)
+        with(paol0b.azuredevops.services.AzureDevOpsCoroutineScope.getInstance(project)) {
+            kotlinx.coroutines.launch(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    val changes = gitService.getChangesBetweenBranches(source.name, target.name)
+                    val commits = gitService.getCommitsBetweenBranches(source.name, target.name)
 
-                ApplicationManager.getApplication().invokeLater {
-                    currentChanges = changes
-                    currentCommits = commits
-                    commitCountLabel.icon = null
-                    commitCountLabel.text = "Changes from ${commits.size} commit${if (commits.size != 1) "s" else ""}"
-                    populateChangesTree(changes)
-                }
-            } catch (e: Exception) {
-                ApplicationManager.getApplication().invokeLater {
-                    commitCountLabel.icon = AllIcons.General.Error
-                    commitCountLabel.text = "Error loading changes: ${e.message}"
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        currentChanges = changes
+                        currentCommits = commits
+                        commitCountLabel.icon = null
+                        commitCountLabel.text = "Changes from ${commits.size} commit${if (commits.size != 1) "s" else ""}"
+                        populateChangesTree(changes)
+                    }
+                } catch (e: Exception) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        commitCountLabel.icon = AllIcons.General.Error
+                        commitCountLabel.text = "Error loading changes: ${e.message}"
+                    }
                 }
             }
         }

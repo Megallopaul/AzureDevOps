@@ -239,34 +239,34 @@ class GitRepositoryService(private val project: Project) {
     /**
      * Gets the changes between two branches
      */
-    fun getChangesBetweenBranches(sourceBranch: String, targetBranch: String): List<Change> {
-        val repository = getCurrentRepository() ?: return emptyList()
+    suspend fun getChangesBetweenBranches(sourceBranch: String, targetBranch: String): List<Change> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val repository = getCurrentRepository() ?: return@withContext emptyList()
 
         try {
             val sourceRef = resolveGitRef(sourceBranch)
             val targetRef = resolveGitRef(targetBranch)
 
-            return GitChangeUtils.getDiff(project, repository.root, targetRef, sourceRef, null).toList()
+            return@withContext GitChangeUtils.getDiff(project, repository.root, targetRef, sourceRef, null).toList()
         } catch (e: Exception) {
             logger.error("Error getting changes between branches", e)
-            return emptyList()
+            return@withContext emptyList()
         }
     }
 
     /**
      * Gets the commits between two branches
      */
-    fun getCommitsBetweenBranches(sourceBranch: String, targetBranch: String): List<git4idea.GitCommit> {
-        val repository = getCurrentRepository() ?: return emptyList()
+    suspend fun getCommitsBetweenBranches(sourceBranch: String, targetBranch: String): List<git4idea.GitCommit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val repository = getCurrentRepository() ?: return@withContext emptyList()
 
         try {
             val sourceRef = resolveGitRef(sourceBranch)
             val targetRef = resolveGitRef(targetBranch)
 
-            return GitHistoryUtils.history(project, repository.root, "$targetRef..$sourceRef")
+            return@withContext GitHistoryUtils.history(project, repository.root, "$targetRef..$sourceRef")
         } catch (e: Exception) {
             logger.error("Error getting commits between branches", e)
-            return emptyList()
+            return@withContext emptyList()
         }
     }
 }

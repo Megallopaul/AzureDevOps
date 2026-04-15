@@ -112,7 +112,7 @@ class CreatePullRequestDialog private constructor(
                         indicator.fraction = 0.6
                         val changes = if (currentBranch != null && defaultTarget != null) {
                             try {
-                                gitService.getChangesBetweenBranches(currentBranch.name, defaultTarget.name)
+                                kotlinx.coroutines.runBlocking { gitService.getChangesBetweenBranches(currentBranch.name, defaultTarget.name) }
                             } catch (e: Exception) {
                                 Logger.getInstance(CreatePullRequestDialog::class.java)
                                     .warn("Failed to load initial changes", e)
@@ -126,7 +126,7 @@ class CreatePullRequestDialog private constructor(
                         indicator.fraction = 0.8
                         val commits = if (currentBranch != null && defaultTarget != null) {
                             try {
-                                gitService.getCommitsBetweenBranches(currentBranch.name, defaultTarget.name)
+                                kotlinx.coroutines.runBlocking { gitService.getCommitsBetweenBranches(currentBranch.name, defaultTarget.name) }
                             } catch (e: Exception) {
                                 Logger.getInstance(CreatePullRequestDialog::class.java)
                                     .warn("Failed to load initial commits", e)
