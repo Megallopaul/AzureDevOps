@@ -464,11 +464,12 @@ class DiffViewerPanel(
         )
 
         val diffManager = DiffManager.getInstance()
-        currentDiffPanel = diffManager.createRequestPanel(project, this, null).apply {
+        val panel = diffManager.createRequestPanel(project, this, null).apply {
             setRequest(diffRequest)
         }
+        currentDiffPanel = panel
 
-        add(currentDiffPanel!!.component, BorderLayout.CENTER)
+        add(panel.component, BorderLayout.CENTER)
         revalidate()
         repaint()
 

@@ -598,9 +598,13 @@ class CommentsNavigatorPanel(private val project: Project) : JPanel(BorderLayout
         
         // Subscribe to file editor events and save the connection to disconnect later
         messageConnection = project.messageBus.connect()
-        messageConnection!!.subscribe(
+        val listener = fileEditorListener ?: run {
+            logger.warn("File editor listener is null, cannot subscribe")
+            return
+        }
+        messageConnection?.subscribe(
             FileEditorManagerListener.FILE_EDITOR_MANAGER,
-            fileEditorListener!!
+            listener
         )
         
         logger.info("File change listener registered for auto-show comments")

@@ -51,7 +51,7 @@ class CreatePrDiffFileEditor(
             wrapper.add(panel.component, BorderLayout.CENTER)
         }
 
-        diffPanel!!.setRequest(request)
+        diffPanel?.setRequest(request)
         wrapper.revalidate()
         wrapper.repaint()
     }

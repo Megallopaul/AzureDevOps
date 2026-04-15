@@ -89,11 +89,11 @@ class WorkItemToolWindow(private val project: Project) {
             })
             add(object : AnAction("Sprint View", "Show grouped by sprint state", AllIcons.Actions.GroupByPackage) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    if (sprintViewPanel == null) {
-                        sprintViewPanel = SprintViewPanel(project)
-                        contentPanel.add(sprintViewPanel!!.getComponent(), VIEW_SPRINT)
+                    val panel = sprintViewPanel ?: SprintViewPanel(project).also {
+                        sprintViewPanel = it
+                        contentPanel.add(it.getComponent(), VIEW_SPRINT)
                     }
-                    sprintViewPanel?.refresh()
+                    panel.refresh()
                     val cardLayout = contentPanel.layout as CardLayout
                     cardLayout.show(contentPanel, VIEW_SPRINT)
                 }
