@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 import paol0b.azuredevops.model.PullRequest
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Service to manage PR Review workspace state
@@ -23,8 +24,8 @@ class PrReviewStateService(private val project: Project) : PersistentStateCompon
     private val logger = Logger.getInstance(PrReviewStateService::class.java)
     private var myState = State()
 
-    // Listeners for state changes
-    private val stateChangeListeners = mutableListOf<StateChangeListener>()
+    // Thread-safe list of listeners for state changes
+    private val stateChangeListeners = CopyOnWriteArrayList<StateChangeListener>()
 
     companion object {
         fun getInstance(project: Project): PrReviewStateService {
