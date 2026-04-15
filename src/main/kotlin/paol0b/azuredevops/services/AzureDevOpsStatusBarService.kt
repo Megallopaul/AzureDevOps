@@ -76,6 +76,12 @@ class AzureDevOpsStatusBarService(private val project: Project) : Disposable {
         if (!isRunning) return
         isRunning = false
         scheduler?.shutdown()
+        try {
+            scheduler?.awaitTermination(5, TimeUnit.SECONDS)
+        } catch (e: InterruptedException) {
+            logger.warn("Interrupted while waiting for polling scheduler to terminate", e)
+            Thread.currentThread().interrupt()
+        }
         scheduler = null
     }
 

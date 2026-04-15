@@ -1,5 +1,6 @@
 package paol0b.azuredevops.services
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
@@ -11,9 +12,10 @@ import java.util.concurrent.TimeUnit
 /**
  * Project service that triggers a periodic refresh of the Pull Requests list.
  * Uses self-rescheduling to prevent overlapping requests and support configurable intervals.
+ * Implements Disposable to ensure scheduler threads are properly terminated on project close.
  */
 @Service(Service.Level.PROJECT)
-class PullRequestsPollingService(private val project: Project) {
+class PullRequestsPollingService(private val project: Project) : Disposable {
 
     private val logger = Logger.getInstance(PullRequestsPollingService::class.java)
     private var scheduler: ScheduledExecutorService? = null
@@ -71,7 +73,18 @@ class PullRequestsPollingService(private val project: Project) {
         logger.info("Stopping pull requests polling")
         isPolling = false
         scheduler?.shutdown()
+        try {
+            scheduler?.awaitTermination(5, TimeUnit.SECONDS)
+        } catch (e: InterruptedException) {
+            logger.warn("Interrupted while waiting for polling scheduler to terminate", e)
+            Thread.currentThread().interrupt()
+        }
         scheduler = null
+    }
+
+    override fun dispose() {
+        stopPolling()
+        refreshAction = null
     }
 
     /**
