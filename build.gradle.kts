@@ -22,7 +22,15 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.2")
     // OkHttp for robust HTTP requests with native PATCH support
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
+
+    // Testing
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.14")
+    testImplementation("org.assertj:assertj-core:3.27.3")
+    
+    // JUnit 5 for unit tests (non-Platform tests)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     intellijPlatform {
         intellijIdea("2025.3.3")
@@ -220,6 +228,15 @@ tasks {
         sourceCompatibility = "21"
         targetCompatibility = "21"
     }
+    
+    // Configure all tests to use JUnit Platform
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+        }
+    }
 }
 
 kotlin {
@@ -243,4 +260,11 @@ ktlint {
         exclude("**/generated/**")
         include("**/kotlin/**")
     }
+}
+
+// Increase test memory and isolate from IntelliJ Platform
+tasks.withType<Test> {
+    maxHeapSize = "1024m"
+    forkEvery = 1
+    systemProperty("java.awt.headless", "true")
 }

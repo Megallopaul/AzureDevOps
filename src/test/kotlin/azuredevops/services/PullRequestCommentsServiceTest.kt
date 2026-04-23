@@ -1,13 +1,16 @@
 package azuredevops.services
 
 import azuredevops.model.CommentThread
-import azuredevops.model.FilePath
 import azuredevops.model.PullRequest
+import azuredevops.model.PullRequestStatus
+import azuredevops.model.Repository
 import azuredevops.model.ThreadStatus
+import azuredevops.model.User
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.mockk.every
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
