@@ -281,7 +281,8 @@ class CommentThreadDialog(
         val statusLabel = JLabel("Status:")
         statusComboBox.apply {
             // Add all thread statuses except Unknown
-            paol0b.azuredevops.model.ThreadStatus.entries
+            paol0b.azuredevops.model.ThreadStatus
+                .allValues()
                 .filter { it != paol0b.azuredevops.model.ThreadStatus.Unknown }
                 .forEach { addItem(it) }
 

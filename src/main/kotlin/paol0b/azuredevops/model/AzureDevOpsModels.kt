@@ -173,29 +173,40 @@ data class PullRequest(
 
 /**
  * Pull Request status
+ * Sealed class for better type safety and exhaustiveness checking
  */
-enum class PullRequestStatus {
-    @SerializedName("notSet")
-    NotSet,
+sealed class PullRequestStatus(
+    @SerializedName("value")
+    val value: String,
+) {
+    abstract fun getDisplayName(): String
 
-    @SerializedName("active")
-    Active,
+    object NotSet : PullRequestStatus("notSet") {
+        override fun getDisplayName() = "Not Set"
+    }
 
-    @SerializedName("abandoned")
-    Abandoned,
+    object Active : PullRequestStatus("active") {
+        override fun getDisplayName() = "Active"
+    }
 
-    @SerializedName("completed")
-    Completed,
+    object Abandoned : PullRequestStatus("abandoned") {
+        override fun getDisplayName() = "Abandoned"
+    }
 
-    ;
+    object Completed : PullRequestStatus("completed") {
+        override fun getDisplayName() = "Completed"
+    }
 
-    fun getDisplayName(): String =
-        when (this) {
-            NotSet -> "Not Set"
-            Active -> "Active"
-            Abandoned -> "Abandoned"
-            Completed -> "Completed"
-        }
+    companion object {
+        fun fromValue(value: String?): PullRequestStatus =
+            when (value) {
+                "notSet" -> NotSet
+                "active" -> Active
+                "abandoned" -> Abandoned
+                "completed" -> Completed
+                else -> NotSet
+            }
+    }
 }
 
 /**
@@ -404,56 +415,79 @@ data class LineInfo(
 
 /**
  * Thread status
+ * Sealed class for better type safety and exhaustiveness checking
  */
-enum class ThreadStatus {
-    @SerializedName("unknown")
-    Unknown,
+sealed class ThreadStatus(
+    @SerializedName("value")
+    val value: String,
+    val apiValue: Int,
+) {
+    abstract fun getDisplayName(): String
 
-    @SerializedName("active")
-    Active,
+    object Unknown : ThreadStatus("unknown", 0) {
+        override fun getDisplayName() = "Unknown"
+    }
 
-    @SerializedName("fixed")
-    Fixed,
+    object Active : ThreadStatus("active", 1) {
+        override fun getDisplayName() = "Active"
+    }
 
-    @SerializedName("wontFix")
-    WontFix,
+    object Fixed : ThreadStatus("fixed", 2) {
+        override fun getDisplayName() = "Fixed"
+    }
 
-    @SerializedName("closed")
-    Closed,
+    object WontFix : ThreadStatus("wontFix", 3) {
+        override fun getDisplayName() = "Won't Fix"
+    }
 
-    @SerializedName("byDesign")
-    ByDesign,
+    object Closed : ThreadStatus("closed", 4) {
+        override fun getDisplayName() = "Closed"
+    }
 
-    @SerializedName("pending")
-    Pending,
+    object ByDesign : ThreadStatus("byDesign", 5) {
+        override fun getDisplayName() = "By Design"
+    }
 
-    ;
+    object Pending : ThreadStatus("pending", 6) {
+        override fun getDisplayName() = "Pending"
+    }
 
-    fun getDisplayName(): String =
-        when (this) {
-            Unknown -> "Unknown"
-            Active -> "Active"
-            Fixed -> "Fixed"
-            WontFix -> "Won't Fix"
-            Closed -> "Closed"
-            ByDesign -> "By Design"
-            Pending -> "Pending"
-        }
+    companion object {
+        fun fromValue(value: String?): ThreadStatus =
+            when (value) {
+                "unknown" -> Unknown
+                "active" -> Active
+                "fixed" -> Fixed
+                "wontFix" -> WontFix
+                "closed" -> Closed
+                "byDesign" -> ByDesign
+                "pending" -> Pending
+                else -> Unknown
+            }
+
+        fun fromApiValue(value: Int): ThreadStatus =
+            when (value) {
+                0 -> Unknown
+                1 -> Active
+                2 -> Fixed
+                3 -> WontFix
+                4 -> Closed
+                5 -> ByDesign
+                6 -> Pending
+                else -> Unknown
+            }
+
+        /**
+         * Returns all possible status values
+         */
+        fun allValues(): List<ThreadStatus> = listOf(Unknown, Active, Fixed, WontFix, Closed, ByDesign, Pending)
+    }
 
     /**
      * Converts the status to the numeric value required by the Azure DevOps API
      * Used in PATCH requests as the status field
      */
-    fun toApiValue(): Int =
-        when (this) {
-            Unknown -> 0
-            Active -> 1
-            Fixed -> 2
-            WontFix -> 3
-            Closed -> 4
-            ByDesign -> 5
-            Pending -> 6
-        }
+    fun toApiValue(): Int = apiValue
 }
 
 /**
