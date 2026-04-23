@@ -5,8 +5,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * Represents the Azure DevOps account configuration
  */
-@ConsistentCopyVisibility
-data class AzureDevOpsConfig private constructor(
+data class AzureDevOpsConfig(
     val organization: String = "",
     val project: String = "",
     val repository: String = "",
