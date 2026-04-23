@@ -1,5 +1,7 @@
 package azuredevops.http
 
+import azuredevops.result.ApiError
+import azuredevops.result.ApiResult
 import azuredevops.services.AzureDevOpsApiException
 import azuredevops.services.AzureDevOpsConfigService
 import com.intellij.openapi.diagnostic.Logger
