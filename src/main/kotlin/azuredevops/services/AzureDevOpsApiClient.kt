@@ -1,6 +1,7 @@
 package azuredevops.services
 
 import azuredevops.model.*
+import azuredevops.util.GsonFactory
 import azuredevops.util.PluginUtil
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -25,7 +26,7 @@ import java.util.Base64
 class AzureDevOpsApiClient(
     private val project: Project,
 ) {
-    private val gson = Gson()
+    private val gson = GsonFactory.createGson()
     private val logger = Logger.getInstance(AzureDevOpsApiClient::class.java)
     private val httpClient = OkHttpClient()
 

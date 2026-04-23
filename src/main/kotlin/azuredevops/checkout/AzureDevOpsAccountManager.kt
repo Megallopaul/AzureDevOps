@@ -176,7 +176,9 @@ class AzureDevOpsAccountManager : PersistentStateComponent<AzureDevOpsAccountMan
      */
     fun getToken(accountId: String): String? {
         val credentialAttributes = createCredentialAttributes(accountId)
-        return PasswordSafe.instance.getPassword(credentialAttributes)
+        val token = PasswordSafe.instance.getPassword(credentialAttributes)
+        logger.info("getToken($accountId): ${if (token.isNullOrBlank()) "null/empty" else "found (${token.length} chars)"}")
+        return token
     }
 
     /**
@@ -394,7 +396,9 @@ class AzureDevOpsAccountManager : PersistentStateComponent<AzureDevOpsAccountMan
     ) {
         val credentialAttributes = createCredentialAttributes(accountId)
         val credentials = Credentials("", token)
+        logger.info("saveToken($accountId): Saving ${token.length} chars to PasswordSafe")
         PasswordSafe.instance.set(credentialAttributes, credentials)
+        logger.info("saveToken($accountId): PasswordSafe.set() completed")
     }
 
     private fun saveRefreshToken(
